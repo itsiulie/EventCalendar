@@ -15,6 +15,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.4.0/fullcalendar.min.js"></script>
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <style>
+         .fc-month-view span.fc-title{
+         white-space: normal;
+         }
+    </style>
 </head>
 <body>
     <!-- Navigation: Navbar -->
@@ -51,41 +56,41 @@
     <!-- Modal -->
     <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">New Event</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">New Event</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                </div>
+                <form action="{{route('calendar.store')}}" method="POST" class="needs-validation" novalidate>
+                        {{ csrf_field() }}
+                    <div class="modal-body">
+                        <label for="category_id">Choose Category</label>
+                        <select name="category_id" id="category_id">
+                            @forelse ($categories as $category )
+                                <option value={{ $category->id}}>{{ $category->name}}</option>
+                            @empty
+                                <option value="">No categories available</option>   
+                            @endforelse                                                                                         
+                        </select><br>
+                        <label for="title">Title</label>
+                        <input name="title" type="text" class="form-control @error('title') is-invalid @enderror" id="event_title" required>
+                        <div class="invalid-feedback">Please enter a title!</div>
+                        <label for="start_date">Start Date and Time</label>
+                        <input type="datetime-local" class="form-control date @error('start_date') is-invalid @enderror" name="start_date" id="start_date" required>
+                        <div class="invalid-feedback">Please enter a date!</div>
+                        <label for="start_date">End Date and Time</label>
+                        <input type="datetime-local" class="form-control date @error('end_date') is-invalid @enderror" name="end_date" id="end_date" required>
+                        <div class="invalid-feedback">Please enter a date!</div>
+                        <span id="endError" class="text-danger"></span>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" id="event_save_button" class="btn btn-primary" >Save Event</button>
+                    </div>
+                </form>
             </div>
-            <form action="{{route('calendar.store')}}" method="POST" class="needs-validation" novalidate>
-                    {{ csrf_field() }}
-                <div class="modal-body">
-                    <label for="category_id">Choose Category</label>
-                    <select name="category_id" id="category_id">
-                        @forelse ($categories as $category )
-                            <option value={{ $category->id}}>{{ $category->name}}</option>
-                        @empty
-                            <option value="">No categories available</option>   
-                        @endforelse
-                    </select><br>
-                    <label for="title">Title</label>
-                    <input name="title" type="text" class="form-control @error('title') is-invalid @enderror" id="event_title" required>
-                    <div class="invalid-feedback">Please enter a title!</div>
-                    <label for="start_date">Start Date and Time</label>
-                    <input type="datetime-local" class="form-control date @error('start_date') is-invalid @enderror" name="start_date" id="start_date" required>
-                    <div class="invalid-feedback">Please enter a date!</div>
-                    <label for="start_date">End Date and Time</label>
-                    <input type="datetime-local" class="form-control date @error('end_date') is-invalid @enderror" name="end_date" id="end_date" required>
-                    <div class="invalid-feedback">Please enter a date!</div>
-                    <span id="endError" class="text-danger"></span>
-                </div>
-                <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="submit" id="event_save_button" class="btn btn-primary" >Save Event</button>
-                </div>
-            </form>
-        </div>
         </div>
     </div>
     <!--End Modal-->
@@ -151,7 +156,7 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
-        
+       
         var myevents = @json($events);
 
         $('#calendar').fullCalendar({
@@ -161,6 +166,12 @@
                 right: 'month,agendaWeek,agendaDay',
             },
             events: myevents,
+            eventRender: function (event, element, view) {
+                Object.values(event.category).forEach(function (key) {
+                    var categories = Object.values(key);
+                    element.find('.fc-title').append('<div class="hr-line-solid"></div><span style="font-size: 12px">' + categories + '</span></div>');
+                });    
+            },
             selectable: true,
             selectHelper: true,
             editable: true,

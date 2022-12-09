@@ -20,7 +20,7 @@ class CalendarController extends Controller
                 'title' => $booking->title,
                 'start' => $booking->start_date,
                 'end' => $booking->end_date,
-                'category' => Category::where('id', $booking->category_id)->get('name'),
+                'category' => Category::where('id', $booking->category_id)->get('name')->toArray(),
             ];
         }      
         return view('calendar.index', ['events' => $events, 'categories' => $categories]);
@@ -34,11 +34,7 @@ class CalendarController extends Controller
             'end_date' => 'required',
         ]);
 
-        foreach($request->all() as $key=>$data){
-            $request->$key = strip_tags($data);
-        }
         $input = $request->all();
-
         Event::create($input);
 
         return redirect()->back()->with(['success' => 'Event added succesfully']);
